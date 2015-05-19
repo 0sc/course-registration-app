@@ -7,8 +7,17 @@ APP_ROOT = Pathname.new(File.expand_path('../../', __FILE__))
 
 #require controllers
 Dir[APP_ROOT.join('app','controllers','*rb')].each { |file| require file}
+
+require 'data_mapper'
 #require models
+ENV['DATABASE_URL'] = "sqlite3://#{Dir.pwd}/courser_reg.db";
+DataMapper.setup :default, ENV['DATABASE_URL']
+
+#Load up the models and sync the database schema
 Dir[APP_ROOT.join('app','models','*.rb')].each { |file| require file }
+
+DataMapper.finalize
+DataMapper.auto_upgrade!
 
 #configure Server settings
 class Server < Sinatra::Base
