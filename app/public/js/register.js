@@ -12,7 +12,10 @@ $(document).ready(function(){
 			if(data.status == 'done'){
 				val.remove();
 				$("#registered-classes").append("<li class='collection-item avatar'>"+val.html()+"</li>");
-				$("#"+item_id).html("<i class='mdi-content-remove-circle'></i>").removeClass("register").addClass("delete");
+				var par = $("#"+item_id).parent("li");
+				$("#"+item_id).remove();
+				par.append("<a href='#!' class='secondary-content delete' id='"+item_id+"'><i class='mdi-content-remove-circle'></i></a>");
+				//$("#"+item_id).html("<i class='mdi-content-remove-circle'></i>").removeClass("register").addClass("delete");
 			}
 			else{
 				alert("effort failed")
@@ -34,7 +37,9 @@ $(document).ready(function(){
 			if(data.status == 'done'){
 				val.remove();
 				$("#available-classes").append("<li class='collection-item avatar'>"+val.html()+"</li>");
-				$("#"+item_id).html("<i class='mdi-content-add-circle'></i>").removeClass("delete").addClass("register");
+				var par = $("#"+item_id).parent("li");
+				$("#"+item_id).remove();
+				par.append("<a href='#!' class='secondary-content register' id='"+item_id+"'><i class='mdi-content-add-circle'></i></a>");
 			}
 			else{
 				alert("effort failed")
@@ -42,4 +47,8 @@ $(document).ready(function(){
 		});
 		e.preventDefault();
 	});
+
+	$(document).on("click",".view-details",function(){
+		$(this).siblings(".details").slideToggle("slow");
+	})
 });

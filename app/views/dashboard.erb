@@ -19,11 +19,10 @@
             @avatars[course[:course]] == nil ?
            '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
            %>
-     			 <span class="title"><%= course[:topic] %></span>
+     			 <span class="title pink-text lighten-2"><%= course[:topic] %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
       			 <p><i><%= course[:course] %></i></p>
       			 <p><%= course[:timestamp] %></p>
-      			 <p><%= course[:details] %></p>
-      			 <a href="#!" class="edit" ><i class="mid-content-remove-circle"></i></a>&emsp;
+      			 <blockquote class="details" style="display: none;"><b>Details</b><p><%= course[:details] %></p></blockquote>
       			 <a href="#!" class="secondary-content delete" id="<%=index %>"><i class="mdi-content-remove-circle"></i></a>
    			 </li>
          	 <% end %>
@@ -47,10 +46,10 @@
             @avatars[course[:course]] == nil ?
            '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
            %>
-      <span class="title"><%= course[:topic] %></span>
+      <span class="title pink-text lighten-2"><%= course[:topic] %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
       <p><i><%= course[:course] %></i></p>
       <p><%= course[:timestamp] %></p>
-      <p><%= course[:details] %></p>
+      <blockquote class="details" style="display: none;"><b>Details</b><p><%= course[:details] %></p></blockquote>
       <a href="#!" class="secondary-content register" id="<%= course[:id] %>"><i class="mdi-content-add-circle"></i></a>
     </li>
            <% end %>

@@ -12,12 +12,13 @@
 	<body>
 		<nav class="light-blue lighten-1" role="navigation">
     		 <div class="nav-wrapper container">
-    		 	 <a id="logo-container" href="#" class="brand-logo">Logo</a>
+    		 	 <!--a id="logo-container" href="#" class="brand-logo">Logo</a-->
       			 <ul class="right hide-on-med-and-down">
-        		 	 <li><a href="#">Home</a></li>
-        		 	 <li><a href="#">Dashboard</a></li>
-        		 	 <li><a href="#">Available Courses</a></li>
-        		 	 <li><a href="#">Contact us</a></li>
+        		 	 <li><a href="#"><i class="mdi-action-home left"></i>Home</a></li>
+        		 	 <li><a href="/dashboard"><i class="mdi-action-view-module left"></i>Dashboard</a></li>
+        		 	 <li><a href="/dashboard#available-classes"><i class="mdi-av-my-library-books left"></i>Available Courses</a></li>
+        		 	 <li><a href="#"><i class="mdi-communication-quick-contacts-mail left"></i>Contact us</a></li>
+               <%= "<li><a href='/logout'><i class='mdi-action-lock left'></i>Logout</a></li>"  if(session[:user_email] != nil && session[:user_id] != nil) %>
       			 </ul>
 
       			 <ul id="nav-mobile" class="side-nav">
@@ -72,7 +73,7 @@
 			 </div>
 		</footer>
 		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-		<!-- script type="text/javascript" src="/js/jquery-1.10.2.js"></script> -->
+		<!--script type="text/javascript" src="/js/jquery-1.10.2.js"></script> -->
 		<script type="text/javascript" src="/js/materialize.min.js"></script>
 		<script type="text/javascript" src="/js/init.js"></script>
 		<script src="/js/index.js" type="text/javascript"></script>

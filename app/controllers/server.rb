@@ -216,5 +216,19 @@ class Server < Sinatra::Base
 	 	{:id => params[:id], :status => value}.to_json
 	 end
 
+	 get "/logout" do
+	 	 session[:user_email] = nil
+	 	 session[:user_id]	  = nil
+	 	 redirect "/"
+	 end
+
+	 get "/contact" do
+
+	 end
+
+	 get "/admin" do
+
+	 end
+
 	 run! if app_file == $0
 end
