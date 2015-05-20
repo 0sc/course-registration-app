@@ -1,40 +1,60 @@
 <div class="section">
 	<div class="row">
-		Hello <%= session[:user_data][:first_name] %>
+		<h3 class="header orange-text">Hello <%= session[:users][session[:user_email]][:first_name] %></h3>
+		<div class="row"><h6 class="header col s12 light">Here are the courses you've registered for.</h6></div>
+		 <ul class="collection" id="registered-classes">
+        <% 
+        	 hasCourse = false
+        	 myCourses = Hash.new (false) #store courses user have registered for
+        	 index = 0;
+        	 session[:course_reg].each do |crs| 
+        	 if crs[:user_id] == @userId 
+        	 	course = @courses[crs[:course_id]]
+        	 	hasCourse = true
+        	 	myCourses["c"<<course[:id]] = true
+        	%>
 
-      <table>
-        <thead>
-          <tr>
-              <th data-field="id">Name</th>
-              <th data-field="name">Item Name</th>
-              <th data-field="price">Item Price</th>
-          </tr>
-        </thead>
+    		 <li class="collection-item avatar">
+     			 <%= 
+            @avatars[course[:course]] == nil ?
+           '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
+           %>
+     			 <span class="title"><%= course[:topic] %></span>
+      			 <p><i><%= course[:course] %></i></p>
+      			 <p><%= course[:timestamp] %></p>
+      			 <p><%= course[:details] %></p>
+      			 <a href="#!" class="edit" ><i class="mid-content-remove-circle"></i></a>&emsp;
+      			 <a href="#!" class="secondary-content delete" id="<%=index %>"><i class="mdi-content-remove-circle"></i></a>
+   			 </li>
+         	 <% end %>
+         	 <% index += 1 %>
+        <% end %>
+        <%= "<div class='error'><p>It looks like you've not registered for any class. Register for any of the available class below</p></div>" if !hasCourse %>
+    </ul>
 
-        <tbody>
-          <tr>
-            <td>Alvin</td>
-            <td>Eclair</td>
-            <td>$0.87</td>
-          </tr>
-          <tr>
-            <td>Alan</td>
-            <td>Jellybean</td>
-            <td>$3.76</td>
-          </tr>
-          <tr>
-            <td>Jonathan</td>
-            <td>Lollipop</td>
-            <td>$7.00</td>
-          </tr>
-        </tbody>
-      </table>
-            
 	</div>
 </div>
-
+<div class="divider"></div>
 <div class="section">
 	<div class="row">
-		 <h3>Available courses</h3>
+		 <h4>Available courses</h4>
+		 <div class="row"><h6 class="header col s12 light">You can also register for following courses:</h6></div>
+		  <ul class="collection" id="available-classes">
+        <% @courses.each do |course| %>
+         <% if course[:id] != nil && !myCourses["c"<<course[:id]] %>
+         <li class="collection-item avatar">
+           <%= 
+            @avatars[course[:course]] == nil ?
+           '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
+           %>
+      <span class="title"><%= course[:topic] %></span>
+      <p><i><%= course[:course] %></i></p>
+      <p><%= course[:timestamp] %></p>
+      <p><%= course[:details] %></p>
+      <a href="#!" class="secondary-content register" id="<%= course[:id] %>"><i class="mdi-content-add-circle"></i></a>
+    </li>
+           <% end %>
+        <% end %>
+    </ul>
 	</div>
 </div>
