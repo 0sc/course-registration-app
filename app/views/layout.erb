@@ -40,6 +40,11 @@
       	 	 <div class="row center">
         	 	 <h5 class="header col s12 light"><%= @intro %></h5>
       	 	 </div>
+            <% if session[:error] != nil %>
+                <div class="row"><p><i class ="mdi-alert-error"></i>&emsp;<span class="pink-text darken-4"><%= session[:error] %></span></p></div>
+             <%
+                session[:error] = nil
+             end %>
     	 </div>
   	 </div>
   	 <% end %>
@@ -73,7 +78,7 @@
 			 </div>
 		</footer>
 		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-		<!--script type="text/javascript" src="/js/jquery-1.10.2.js"></script> -->
+		<script type="text/javascript" src="/js/jquery-1.10.2.js"></script>
 		<script type="text/javascript" src="/js/materialize.min.js"></script>
 		<script type="text/javascript" src="/js/init.js"></script>
 		<script src="/js/index.js" type="text/javascript"></script>

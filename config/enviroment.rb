@@ -10,7 +10,7 @@ Dir[APP_ROOT.join('app','controllers','*rb')].each { |file| require file}
 
 require 'data_mapper'
 #require models
-ENV['DATABASE_URL'] = "sqlite3://#{Dir.pwd}/courser_reg.db";
+ENV['DATABASE_URL'] = "sqlite3://#{Dir.pwd}/course_reg.db";
 DataMapper.setup :default, ENV['DATABASE_URL']
 
 #Load up the models and sync the database schema

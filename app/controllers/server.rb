@@ -1,60 +1,29 @@
 require 'sinatra/base'
+require 'date'
 
 class Server < Sinatra::Base
 	 enable :sessions
 
-	 helpers do
-	 	include Rack::Utils
-	 	alias_method :h, :escape_html
+	 def addAllSchedule (cus_id)
+	 	value = 'error'
+	 	 schedules = Schedule.all(:course_id => cus_id)
+
+	 	 if schedules
+	 	 	schedules.each do |schedule|
+	 	 		 saved = Registration.create(
+	 	 		 		:user_id => session[:user_id],
+	 	 		 		:schedule_id => schedule.id
+	 	 		 	)
+	 	 		 value = "done" if saved.save
+	 	 	end
+
+	 	 end
+
+	 	 value
 	 end
-
-	 #def initialize
-	 	 users = {
-	 	 		"example@example.com" =>
-	 	 		{
-	 	 			id: 1,
-	 	 			#email: 
-	 	 			first_name: "Sinatra",
-	 	 			last_name: "Ruby",
-	 	 			password: "password",
-	 	 			created_at: Time.now
-	 	 			},
-	 	 		 "email@email.com" =>
-	 	 		 {
-	 	 			id: 2,
-	 	 			#email: "email@email.com",
-	 	 			first_name: "JQuery",
-	 	 			last_name: "JavaScript",
-	 	 			password: "password",
-	 	 			created_at: Time.now
-	 	 			},
-	 	 		 "mail@mail.com" =>
-	 	 		 {
-	 	 			id: 3,
-	 	 			#email: "mail@mail.com",
-	 	 			first_name: "Godwin",
-	 	 			last_name: "Buhari",
-	 	 			password: "password",
-	 	 			created_at: Time.now
-	 	 			}
-	 	 }
-	 	 
-	 	 course_reg = [
-	 	 	 {
-	 	 	 	id: 1,
-	 	 	 	course_id: 1,
-	 	 	 	user_id: 3
-	 	 	 	}
-	 	 ]
-
-	# end
-
 
 	 get '/' do
 	 	 redirect '/dashboard' if(session[:user_email] != nil && session[:user_id] != nil)
-		 session[:users] = users
-	 	 #session[:courses] = courses
-	 	 session[:course_reg] = course_reg
 
 	 	 @title = "Welcome"
 	 	 @pageHeading = "Welcome To CourseHub"
@@ -63,154 +32,121 @@ class Server < Sinatra::Base
 	 end
 
 	 post '/' do 
-	 	 #user = session[:users]
-	 	 #puts params
-	 	  #usr = User.get(params[:email])
-	 	  redirect "/" if params[:email] == "" || params[:email] == nil || session[:users] == nil
+	 	 puts params
+	 	 if params[:email] == "" || params[:email] == nil 
+	 	  	session[:error] = "Oops! Looks like you submitted an empty form."
+	 	  	redirect "/" 
+	 	  end
 
 	 	  email = params[:email]
-	 	  usr  = session[:users][:email] == nil
+	 	  db  = User.first(:email => email)
 
-	 	  puts session[:users]
-
-	 	 if usr && params[:isNewUser] != nil #register new user
+	 	 if !db && params[:isNewUser] != nil #register new user
 	 	 	puts "Trying for new user"
-	 	 	redirect '/' if (params[:first_name] == "" || params[:last_name] == "") #first_name & user_name is empty
-	 	 	
-	 	 	#usr = User.new
-	 	 	usr = {}
+	 	 	if (params[:first_name] == "" || params[:last_name] == "") #first_name & user_name is empty
+	 	 		session[:error] = "We require your Firstname and Last name to register a new account"
+	 	 		redirect '/' 
+	 	 	end
 
-	 	 	usr[:id] = session[:users].length + 1
-	 	 	usr[:password] = params[:password]
-	 	 	usr[:first_name] = params[:first_name]
-	 	 	usr[:last_name] = params[:last_name]
-	 	 	usr[:created_at] = Time.now
+	 	 	password = params[:password]
+	 	 	first_name = params[:first_name]
+	 	 	last_name = params[:last_name]
 
-	 	 	if  usr #usr.save
-	 	 		puts "Saved new user"
-	 	 		session[:users][email] = usr 
+	 	 	usr = User.create(
+	 	 			:password  => password,
+	 	 			:first_name=> first_name,
+	 	 			:last_name => last_name,
+	 	 			:email    => email
+	 	 		);
+
+	 	 	if  usr.saved? #usr.save
+	 	 		puts "Saved new user successfully"
 	 	 		session[:user_email] = email
-	 	 		session[:user_id] = usr[:id]
+	 	 		session[:user_id] = usr.id
+	 	 		session[:first_name] = usr.first_name
+
 	 	 		redirect '/dashboard' #Message :Welcome First_name
 	 	 	else
 	 	 		puts "Oops! Something went wrong. Please try again"
 	 	 		redirect '/' #errorMessage : user already exits
-	 	 	end
+		 	end
 
-	 	 	#redirect '/dashboard'
-	 	 else #try login
+	 	 else 
+	 	 	 if !db
+	 	 	 	 session[:error] = "We don't know that email. Use the checkbox below to register a new account."
+	 	  		 redirect "/" 
+	 	 	 end
+	 	 	 #try login
 	 	 	puts 'Trying to login'
-	 	 	#usr = User.all(:email => params[:email], :password => params[:password])
-	 	 	successful = (session[:users][email] != nil && session[:users][email][:password] == params[:password])
+
+	 	 	successful = db.password == params[:password]
+
 	 	 	unless successful
 	 	 		#set error message here
-	 	 		puts "invalid email && password combination"
+	 	 		session[:error] = "Invalid email && password combination."
 	 	 		redirect '/'
 	 	 	end
 	 	 	  #setup session user data
-	 	 	  puts "User loggeds in successfully"
-	 	 	  #session[:users].push(usr) already exists in session db
+	 	 	  puts "User logs in successfully"
+
 	 	 	  session[:user_email] = email
-	 	 	  session[:user_id] = session[:users][email][:id]
+	 	 	  session[:user_id] = db.id
+	 	 	  session[:first_name] = db.first_name
+
 	 	 	 redirect '/dashboard'
 	 	 end
-
 	 end
 
 	 get '/dashboard' do 
-	 	puts session
-	 	 redirect '/' if(session[:user_email] == nil || session[:user_id] == nil)
+	 	 if(session[:user_email] == nil || session[:user_id] == nil)
+	 	 	 session[:error] = "Please login to access the app."
+	 	 	 redirect '/' 
+	 	 end
 
 	 	 @userId = session[:user_id]
 	 	 @title = "Dashboard"
-	 	 @courses = [
-	 	 	{},
-	 	 	 {
-	 	 	 	 id: 1,
-	 	 	 	 course: "Ruby",
-	 	 	 	 topic: "Object Oriented Programming",
-	 	 	 	 details: "Ruby is an object-oriented language. In this lesson, we'll cover objects, classes, and how they're used to organize information and behavior in our programs. In this lesson, we'll also cover more advanced aspects of OOP in Ruby, including information hiding, modules, and mixins.",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 2,
-	 	 	 	 course: "Ruby",
-	 	 	 	 topic: "Blocks, Procs, Lambds",
-	 	 	 	 details: "In this course, we'll cover three of the most powerful aspects of the Ruby programming language: blocks, procs, and lambdas.",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 3,
-	 	 	 	 course: "JavaScript",
-	 	 	 	 topic: "Strings",
-	 	 	 	 details:"Searching large blocks of text can be tedious, but with JavaScript, it's a breeze! In this project, we'll show you how to search long blocks of text for important information (such as your name).",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 4,
-	 	 	 	 course: "JavaScript",
-	 	 	 	 topic: "Arrays",
-	 	 	 	 details: "In this class, we'll cover some of the more powerful features of JavaScript in greater detail. We'll review arrays, create arrays of arrays, and begin learning about a new data structure: objects. With arrays and objects, we can create a contact list / phone book with ease.",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 5,
-	 	 	 	 course: "C++",
-	 	 	 	 topic: "Inheritance",
-	 	 	 	 details: "In object-oriented programming (OOP), inheritance is when an object or class is based on another object or class, using the same implementation (inheriting from a class) specifying implementation to maintain the same behavior (realizing an interface; inheriting behavior).",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 6,
-	 	 	 	 course: "Java",
-	 	 	 	 topic: "Loops and Control statements",
-	 	 	 	 details: "Now that we know how to write simple programs, let's learn how to write more complex programs that can respond to user input.Using loops and iterators, you can automate repetitive tasks for you quickly and easily.",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 7,
-	 	 	 	 course: "Ruby",
-	 	 	 	 topic: "Variables",
-	 	 	 	 details: "This course will introduce you to Ruby, a general-purpose, object-oriented interpreted language you can use for countless standalone projects or scripting applications. Now that you've completed the lesson on Ruby variables, let's see if you can put your newfound skills to use. In this project, you'll create a simple calculator that determines the price of a meal after tax and tip.",
-	 	 	 	 timestamp: Time.now
-	 	 	 },
-	 	 	 {
-	 	 	 	 id: 8,
-	 	 	 	 course: "Python",
-	 	 	 	 topic: "Data Types",
-	 	 	 	 details: "In this lesson, we'll cover some of the more complex aspects of Python, including iterating over data structures, list comprehensions, list slicing, and lambda expressions. We'll also introduce Bitwise operations. Bitwise operations directly manipulate bits—patterns of 0s and 1s. Though they can be tricky to learn at first, their speed makes them a useful addition to any programmer's toolbox.",
-	 	 	 	 timestamp: Time.now
-	 	 	 }
-	 	 ]
-	 	 @avatars = {
-	 	 	  "Ruby" => "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQmqZ1woyjf4UzDP7AhE4-pX74V1CMz-AFQI763LzvTEmEsxvimntzoBw",
-	 	 	  "Python" => "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT4yd4CQwRe8hkU-s3YL7gP0QflwQQqqf8ATIp-pLYJ7VOg8wVm2bQ01g",
-	 	 	  "JavaScript" => "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRs49PrvJy5eNbHtl6gfApLEiHh2mLJOmagN7t0CVai5DRojc9c",
-	 	 	  "C++" => "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTMwwu6nJd2BoWlCaNIJSBZa6RTIMnz-aJ4AdaJL4yO3WpAy4yibg" 	 	
-	 	 }
-
-	 	 #@courses = session[:courses]
 	 	 
 	 	 erb :dashboard
 	 end
 
 	 post '/register' do
-	 	 session[:course_reg].push({
-	 	 	id: session[:course_reg].length + 1,
-	 	 	user_id: session[:user_id],
-	 	 	course_id: params[:id].to_i
-	 	 	})
+	 	 value = addAllSchedule(params[:id])
 
 	 	 content_type 'application/json'
-	 	 value = 'done'
 	 	 {:id => params[:id], :status => value}.to_json
 	 end
 
-	 post '/delete' do 
-	 	#puts "#{session[:course_reg]}"
-	 	session[:course_reg].delete_at(params[:id].to_i)
-		#puts "Ajax delete request received with #{params[:id]}"
-		#puts "#{session[:course_reg]}"
+	 post '/update' do
+ 	 	 puts "Ajax request received"
+ 	 	 puts params
+
+ 	 	 value = "error"
+
+ 	 	 if params[:rm] != nil
+ 	 	 	 params[:rm].each do |schedule_id|
+ 	 	 		 puts "remove #{schedule_id}"
+ 	 			 entry = Registration.all(:schedule_id => schedule_id) + Registration.all(:user_id => session[:user_id])
+
+ 	 			 entry.destroy if entry
+
+ 	 			 value = "done" if  entry
+ 	 	 	 end
+ 	 	 end
+
+ 	 	 if params[:mk] != nil
+ 	 	 	 params[:mk].each do |schedule_id|
+ 	 	 	 	
+ 	 	 	 	 entry = Registration.get(:schedule_id => schedule_id)
+ 	 	 	 	 if !entry
+ 	 	 	 	 	 puts "add #{schedule_id}"
+ 	 	 	 	 	 saved = Registration.create(
+	 	 		 			:user_id => session[:user_id],
+	 	 		 			:schedule_id => schedule_id
+	 	 		 		 )
+	 	 	 	 	 value = "done" if saved.save
+	 	 	 	 end
+ 	 	 	 end
+	 	 end 
 	 	content_type 'application/json'
 	 	value = 'done'
 	 	{:id => params[:id], :status => value}.to_json
@@ -227,7 +163,30 @@ class Server < Sinatra::Base
 	 end
 
 	 get "/admin" do
+	 	 @title = "Testing Testing"
+	 	 erb :test
+	 end
 
+	 get "/add" do
+	 	 
+	 	courses = CourseClasses.new
+
+	 	courses.title = "New Course"
+	 	courses.created_at = Time.new
+
+	 	 begin 
+
+	 	if courses.save
+	 		puts "Saved successful"
+	 	else 
+	 		courses.errors.each do |e|
+	 			puts e
+	 		end
+	 	 end
+ 	 	
+ 	 	 rescue
+
+ 	 	 end
 	 end
 
 	 run! if app_file == $0

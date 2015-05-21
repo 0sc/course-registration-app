@@ -1,59 +1,136 @@
+<%
+  #Intialize database connectors
+  klasses = CourseClasses.all()
+  regs    = Registration.all(:user_id => session[:user_id])
+%>
+
 <div class="section">
-	<div class="row">
-		<h3 class="header orange-text">Hello <%= session[:users][session[:user_email]][:first_name] %></h3>
-		<div class="row"><h6 class="header col s12 light">Here are the courses you've registered for.</h6></div>
-		 <ul class="collection" id="registered-classes">
+  <div class="row">
+    <h3 class="header orange-text">Hello <%= session[:first_name] %></h3>
+    <div class="row"><h6 class="header col s12 light">Here is your class schedule.</h6></div>
         <% 
-        	 hasCourse = false
-        	 myCourses = Hash.new (false) #store courses user have registered for
-        	 index = 0;
-        	 session[:course_reg].each do |crs| 
-        	 if crs[:user_id] == @userId 
-        	 	course = @courses[crs[:course_id]]
-        	 	hasCourse = true
-        	 	myCourses["c"<<course[:id]] = true
-        	%>
+           hasCourse = false
+           myCourses = {} #store courses user have registered for
+           scheduleLnk=Hash.new (false) #store reg id used for ajax remove
 
-    		 <li class="collection-item avatar">
-     			 <%= 
-            @avatars[course[:course]] == nil ?
-           '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
+           regs.each do |reg| #get courses user is registered for
+
+           schedules = Schedule.get(reg.schedule_id)
+
+           myCourses[schedules.course_id] = true;
+
+           hasCourse = true
+           end
+        %>
+
+       <ul class="collection" id="registered-classes">
+           <%
+              myCourses.each do |myCourse,val|
+              course = Course.get(myCourse)
+              klass   = CourseClasses.get(course.class_id)
            %>
-     			 <span class="title pink-text lighten-2"><%= course[:topic] %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
-      			 <p><i><%= course[:course] %></i></p>
-      			 <p><%= course[:timestamp] %></p>
-      			 <blockquote class="details" style="display: none;"><b>Details</b><p><%= course[:details] %></p></blockquote>
-      			 <a href="#!" class="secondary-content delete" id="<%=index %>"><i class="mdi-content-remove-circle"></i></a>
-   			 </li>
-         	 <% end %>
-         	 <% index += 1 %>
+           <li class="collection-item avatar">
+             <%= (klass.avatar == nil) ? '<i class="mdi-file-folder circle"></i>' : '<img src="' << klass.avatar << '" class="circle" />'
+             %>
+
+           <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
+             <p><i><%= klass.title %></i></p><br />
+             <%
+                 scheduleLnk = {}
+                 #create {schedule.id} = [reg.id]
+                 schedules = Schedule.all(:course_id => course.id)
+                 schedules.each do |schedule|
+                    scheduleLnk [schedule.id] = [schedule.time]
+                 end
+
+                 #create {schedule.id} = [time,reg.id]
+                 regs.each do |reg|
+                    scheduleLnk[reg.schedule_id].push(reg.id) if scheduleLnk[reg.schedule_id] != nil
+                 end
+                 times = []
+                 scheduleLnk.each {|x,y| times.push(y[0]) if y[1] != nil }
+             %>
+              <p class="time-list"><span ><%= times.join(", ") %></span></p>
+             <blockquote class="details" style="display: none;"><b>Details</b><p><%= course.details %></p></blockquote>
+             <a href="#!" class="secondary-content edit" id=""><i class="mdi-editor-border-color"></i></a>
+
+             <div class="row"><div class="divider"></div></div>
+
+             <div class="row">
+                 <b>Edit course schedule</b><br />
+                 <i class="mdi-action-info-outline left"> </i>&nbsp;<i>Remove all course schedule to delete course</i>
+                 <br />
+                 <form class="col s12 delete" action="update" method="POST">
+                     <div class="row">
+                      <%
+                          scheduleLnk.each do |schID, schData|
+                             #schID = [time,reg.id]
+                             isChecked = schData[1] != nil 
+                             rmID = schID
+                             rmTime=schData[0]
+                       %>
+                         <p>
+                         <input type="checkbox" id="rm_<%= rmID %>" name="rm[]" value="<%=rmID %>" 
+                         <%= !isChecked ? 'checked = "checked"' : '' %> />
+                         <label for="rm_<%=rmID %>">Remove <%= rmTime %> schedule</label>
+                         </p>
+                       <%     
+                          end
+                      %>
+                         <br /><br />
+                       <button class="btn waves-effect waves-light" type="submit" name="action">Save
+                          <i class="mdi-content-save right"></i>
+                      </button>
+                     </div>
+                 </form>
+               </div>
+
+         </li>
         <% end %>
-        <%= "<div class='error'><p>It looks like you've not registered for any class. Register for any of the available class below</p></div>" if !hasCourse %>
+        <%= "<li><p class='pink-text darken-4'><i class ='mdi-alert-error'></i>&emsp;It looks like you've not registered for any class. Register for any of the available classes below</p></li>" if !hasCourse %>
     </ul>
 
-	</div>
+  </div>
 </div>
+
 <div class="divider"></div>
+
 <div class="section">
 	<div class="row">
-		 <h4>Available courses</h4>
-		 <div class="row"><h6 class="header col s12 light">You can also register for following courses:</h6></div>
-		  <ul class="collection" id="available-classes">
-        <% @courses.each do |course| %>
-         <% if course[:id] != nil && !myCourses["c"<<course[:id]] %>
-         <li class="collection-item avatar">
-           <%= 
-            @avatars[course[:course]] == nil ?
-           '<i class="mdi-file-folder circle"></i>' : '<img src="'<< @avatars[course[:course]]<<'" class="circle" />'
-           %>
-      <span class="title pink-text lighten-2"><%= course[:topic] %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
-      <p><i><%= course[:course] %></i></p>
-      <p><%= course[:timestamp] %></p>
-      <blockquote class="details" style="display: none;"><b>Details</b><p><%= course[:details] %></p></blockquote>
-      <a href="#!" class="secondary-content register" id="<%= course[:id] %>"><i class="mdi-content-add-circle"></i></a>
-    </li>
-           <% end %>
-        <% end %>
-    </ul>
+		 <h4>Available classes</h4>
+		 <div class="row"><h6 class="header col s12 light">You can register for following courses:</h6></div>
+
+     <% klasses.each do|klass| %>
+        <div class="row center"><h5 class="header"><%= klass.title %></h5></div>
+        <ul class="collection" id="available-classes">
+         <% 
+            courses = Course.all(:class_id => klass.id) 
+            courses.each do |course|
+              if !myCourses[course.id]
+          %>
+          <% #!myCourses["c"<<course[:id]] %>
+          <li class="collection-item avatar">
+             <%=
+                (klass.avatar == nil) ? '<i class="mdi-file-folder circle"></i>' : '<img src="' << klass.avatar << '" class="circle" />'
+             %>
+             <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
+             <%
+                schedules = Schedule.all(:course_id => course.id)
+                courseTimes = []
+                schedules.each do |schedule|
+                   courseTimes.push(Time.at(schedule.time).to_date)
+                end
+                courseTimes = courseTimes.join(" | ")
+             %>
+             <p><i class="mdi-device-access-time"></i>&nbsp;<%= courseTimes %></p>
+             <blockquote class="details" style="display: none;"><b>Details</b><p><%= course.details %></p></blockquote>
+              <a href="#!" class="secondary-content register" id="<%= course.id %>"><i class="mdi-content-add-circle"></i></a>
+             </li>
+             <% 
+               end
+             end 
+             %>
+         </ul>
+       <% end %>
 	</div>
 </div>
