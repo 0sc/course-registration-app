@@ -33,7 +33,7 @@
              <%= (klass.avatar == nil) ? '<i class="mdi-file-folder circle"></i>' : '<img src="' << klass.avatar << '" class="circle" />'
              %>
 
-           <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
+           <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<a href="#!" class="view-details"><i class="mdi-navigation-unfold-more"></i></a>
              <p><i><%= klass.title %></i></p><br />
              <%
                  scheduleLnk = {}
@@ -48,17 +48,16 @@
                     scheduleLnk[reg.schedule_id].push(reg.id) if scheduleLnk[reg.schedule_id] != nil
                  end
                  times = []
-                 scheduleLnk.each {|x,y| times.push(y[0]) if y[1] != nil }
+                 scheduleLnk.each {|x,y| times.push(formatTime(y[0])) if y[1] != nil }
              %>
-              <p class="time-list"><span ><%= times.join(", ") %></span></p>
+              <p class="time-list"><span ><%= times.join(";&emsp;") %></span></p>
              <blockquote class="details" style="display: none;"><b>Details</b><p><%= course.details %></p></blockquote>
              <a href="#!" class="secondary-content edit" id=""><i class="mdi-editor-border-color"></i></a>
 
-             <div class="row"><div class="divider"></div></div>
-
-             <div class="row">
+             <div class="row edit-section" style="display: none;">
+                 <div class="row"><div class="divider"></div></div>
                  <b>Edit course schedule</b><br />
-                 <i class="mdi-action-info-outline left"> </i>&nbsp;<i>Remove all course schedule to delete course</i>
+                 <i class="mdi-action-info-outline left"> </i>&nbsp;<i>Remove all schedule to delete course</i>
                  <br />
                  <form class="col s12 delete" action="update" method="POST">
                      <div class="row">
@@ -72,7 +71,7 @@
                          <p>
                          <input type="checkbox" id="rm_<%= rmID %>" name="rm[]" value="<%=rmID %>" 
                          <%= !isChecked ? 'checked = "checked"' : '' %> />
-                         <label for="rm_<%=rmID %>">Remove <%= rmTime %> schedule</label>
+                         <label for="rm_<%=rmID %>">Remove <%= formatTime(rmTime) %> schedule</label>
                          </p>
                        <%     
                           end
@@ -105,22 +104,25 @@
         <ul class="collection" id="available-classes">
          <% 
             courses = Course.all(:class_id => klass.id) 
+            hasCourse = false
             courses.each do |course|
               if !myCourses[course.id]
+
+                hasCourse = true
           %>
           <% #!myCourses["c"<<course[:id]] %>
           <li class="collection-item avatar">
              <%=
                 (klass.avatar == nil) ? '<i class="mdi-file-folder circle"></i>' : '<img src="' << klass.avatar << '" class="circle" />'
              %>
-             <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<i class="mdi-navigation-unfold-more view-details"></i>
+             <span class="title pink-text lighten-2"><%= course.topic %></span>&emsp;<a href="#!" class="view-details"><i class="mdi-navigation-unfold-more"></i></a>
              <%
                 schedules = Schedule.all(:course_id => course.id)
                 courseTimes = []
                 schedules.each do |schedule|
-                   courseTimes.push(Time.at(schedule.time).to_date)
+                   courseTimes.push(formatTime(schedule.time))
                 end
-                courseTimes = courseTimes.join(" | ")
+                courseTimes = courseTimes.join(";&emsp;")
              %>
              <p><i class="mdi-device-access-time"></i>&nbsp;<%= courseTimes %></p>
              <blockquote class="details" style="display: none;"><b>Details</b><p><%= course.details %></p></blockquote>
@@ -128,8 +130,13 @@
              </li>
              <% 
                end
-             end 
+             end
+
+              #if no course is printed output default placeholder
+              if !hasCourse 
              %>
+             <%= "<li class='collection-item avatar'><i class='mdi-notification-event-busy circle'></i><p><span class='title blue-text lighten-2'>There are no more course for this class.</span><br /><br /></p></li>"%>
+             <% end %>
          </ul>
        <% end %>
 	</div>

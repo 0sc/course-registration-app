@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$(document).on("click",".register",function(e){
-		 alert("Begin Ajax Add")
+		 //alert("Begin Ajax Add")
 		 var val = $(this).parent("li");
 
 		 var item_id = $(this).attr("id");
@@ -11,12 +11,7 @@ $(document).ready(function(){
 			data: {id: item_id},
 		}).done(function(data){
 			if(data.status == 'done'){
-				val.empty().remove();
-				$("#registered-classes").append("<li class='collection-item avatar'>"+val.html()+"</li>");
-				var par = $("#"+item_id).parent("li");
-				$("#"+item_id).remove();
-				par.append("<a href='#!' class='secondary-content delete' id='"+item_id+"'><i class='mdi-content-remove-circle'></i></a>");
-				//$("#"+item_id).html("<i class='mdi-content-remove-circle'></i>").removeClass("register").addClass("delete");
+				val.empty().html("<p><i class= 'mdi-action-thumb-up'></i>&emsp;Course has been added successfully to your schedule.</p>");
 			}
 			else{
 				alert("effort failed")
@@ -27,7 +22,7 @@ $(document).ready(function(){
 	});
 
 	$(document).on("submit","form.delete",function(e){
-		 alert("Begin Ajax Delete");
+		 //alert("Begin Ajax Delete");
 		  var formData = $(this)
 		 //var formData = $(this).serializeArray();
 		 //alert (formData);
@@ -79,4 +74,8 @@ $(document).ready(function(){
 	$(document).on("click",".view-details",function(){
 		$(this).siblings(".details").slideToggle("slow");
 	})
+
+	 $(document).on("click",".edit",function(){
+		$(this).siblings(".edit-section").slideToggle("slow");
+	 })	
 });

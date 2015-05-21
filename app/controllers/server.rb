@@ -22,6 +22,10 @@ class Server < Sinatra::Base
 	 	 value
 	 end
 
+	 def formatTime(val)
+	 	 Time.at(val).strftime("%a, %b %d | %I:%M%P")
+	 end
+
 	 get '/' do
 	 	 redirect '/dashboard' if(session[:user_email] != nil && session[:user_id] != nil)
 
