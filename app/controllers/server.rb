@@ -78,6 +78,7 @@ class Server < Sinatra::Base
 	 	 else 
 	 	 	 if !db
 	 	 	 	 session[:error] = "We don't know that email. Use the checkbox below to register a new account."
+	 	 	 	 #puts "email not found"
 	 	  		 redirect "/" 
 	 	 	 end
 	 	 	 #try login
@@ -88,6 +89,7 @@ class Server < Sinatra::Base
 	 	 	unless successful
 	 	 		#set error message here
 	 	 		session[:error] = "Invalid email && password combination."
+	 	 		#puts "Invalid combination"
 	 	 		redirect '/'
 	 	 	end
 	 	 	  #setup session user data

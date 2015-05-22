@@ -1,4 +1,4 @@
-#ENV["RACK_ENV"] ||= "test"
+ENV["RACK_ENV"] ||= "test"
 
 require 'bundler'
 Bundler.require
@@ -19,12 +19,12 @@ class MyAppTest < Minitest::Test
     assert_equal 200, last_response.status
   end
 
-  def test_login
-  	 get "/"
-  	 assert_equal 200, last_response.status
+  def test_login_without_params
+  	 post "/"
+  	 assert_equal 302, last_response.status
   end
 
-  def test_registration
+  def test_registration_without_params
   	 post '/'
   	 assert_equal 302, last_response.status
   end
@@ -38,7 +38,13 @@ class MyAppTest < Minitest::Test
   	 get '/dashboard'
   	 assert_equal 302, last_response.status
   end
+
 =begin
+  def test_login_with_valid_params
+     post "/", params={:email => "mail@mail.com", :password => "password"}
+     assert_equal 200, last_response.status
+  end
+  
   def test_dashboard_on_login
   	  session[:user_id] = 2
   	  session[:user_email] = 5

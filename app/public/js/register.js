@@ -57,7 +57,7 @@ $(document).ready(function(){
 
 						newTimeVal.push(txt);
 					}
-					newTimeVal.join(", ")
+					newTimeVal.join(",&emsp;")
 				}
 				else{
 					newTimeVal = "You have successfully deleted this course."
