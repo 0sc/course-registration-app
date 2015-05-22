@@ -9,25 +9,25 @@
     <h3 class="header orange-text">Hello <%= session[:first_name] %></h3>
     <div class="row"><h6 class="header col s12 light">Here is your class schedule.</h6></div>
         <% 
-           hasCourse = false
+           hasCourse = false #changes to true if user has registered for any course schedule
            myCourses = {} #store courses user have registered for
            scheduleLnk=Hash.new (false) #store reg id used for ajax remove
 
            regs.each do |reg| #get courses user is registered for
 
-           schedules = Schedule.get(reg.schedule_id)
+           schedules = Schedule.get(reg.schedule_id) #get schedule for each course
 
            myCourses[schedules.course_id] = true;
 
-           hasCourse = true
+           hasCourse = true 
            end
         %>
 
        <ul class="collection" id="registered-classes">
            <%
               myCourses.each do |myCourse,val|
-              course = Course.get(myCourse)
-              klass   = CourseClasses.get(course.class_id)
+                 course = Course.get(myCourse)
+                 klass   = CourseClasses.get(course.class_id)
            %>
            <li class="collection-item avatar">
              <%= (klass.avatar == nil) ? '<i class="mdi-file-folder circle"></i>' : '<img src="' << klass.avatar << '" class="circle" />'
@@ -38,12 +38,12 @@
              <%
                  scheduleLnk = {}
                  #create {schedule.id} = [reg.id]
-                 schedules = Schedule.all(:course_id => course.id)
+                 schedules = Schedule.all(:course_id => course.id) #get all the schedule for a particule course using the id
                  schedules.each do |schedule|
-                    scheduleLnk [schedule.id] = [schedule.time]
+                    scheduleLnk [schedule.id] = [schedule.time] #save id and time
                  end
 
-                 #create {schedule.id} = [time,reg.id]
+                 #store course if user has registered for a particular schedule
                  regs.each do |reg|
                     scheduleLnk[reg.schedule_id].push(reg.id) if scheduleLnk[reg.schedule_id] != nil
                  end
@@ -86,7 +86,7 @@
 
          </li>
         <% end %>
-        <%= "<li><p class='pink-text darken-4'><i class ='mdi-alert-error'></i>&emsp;It looks like you've not registered for any class. Register for any of the available classes below</p></li>" if !hasCourse %>
+        <%= "<li><p class='pink-text darken-4'><i class ='mdi-alert-error'></i>&emsp;It looks like you've not registered for any course. Register for any of the available classes below</p></li>" if !hasCourse %>
     </ul>
 
   </div>

@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	$(document).on("click",".register",function(e){
 		 //alert("Begin Ajax Add")
-		 var val = $(this).parent("li");
+		 var val = $(this).parent("li"); //
 
 		 var item_id = $(this).attr("id");
 
@@ -26,8 +26,9 @@ $(document).ready(function(){
 		  var formData = $(this)
 		 //var formData = $(this).serializeArray();
 		 //alert (formData);
-		  rm = []
-		  mk = []
+		  rm = [] //this stores schedules to be removed
+		  mk = [] //this stores schedules to be added
+		  
 		  formData.find("input[type='checkbox']").each(function(){
 
 		  		if($(this).is(":checked")){

@@ -1,5 +1,5 @@
 require 'sinatra/base'
-require 'date'
+require 'json'
 
 class Server < Sinatra::Base
 	 enable :sessions
@@ -36,17 +36,17 @@ class Server < Sinatra::Base
 	 end
 
 	 post '/' do 
-	 	 puts params
+	 	 #puts params
 	 	 if params[:email] == "" || params[:email] == nil 
 	 	  	session[:error] = "Oops! Looks like you submitted an empty form."
 	 	  	redirect "/" 
 	 	  end
 
 	 	  email = params[:email]
-	 	  db  = User.first(:email => email)
+	 	  db  = User.first(:email => email) #check if user already exists
 
 	 	 if !db && params[:isNewUser] != nil #register new user
-	 	 	puts "Trying for new user"
+	 	 	#puts "Trying for new user"
 	 	 	if (params[:first_name] == "" || params[:last_name] == "") #first_name & user_name is empty
 	 	 		session[:error] = "We require your Firstname and Last name to register a new account"
 	 	 		redirect '/' 
@@ -64,14 +64,14 @@ class Server < Sinatra::Base
 	 	 		);
 
 	 	 	if  usr.saved? #usr.save
-	 	 		puts "Saved new user successfully"
+	 	 		#puts "Saved new user successfully"
 	 	 		session[:user_email] = email
 	 	 		session[:user_id] = usr.id
 	 	 		session[:first_name] = usr.first_name
 
 	 	 		redirect '/dashboard' #Message :Welcome First_name
 	 	 	else
-	 	 		puts "Oops! Something went wrong. Please try again"
+	 	 		session[:error] = "Oops! Something went wrong. Please try again"
 	 	 		redirect '/' #errorMessage : user already exits
 		 	end
 
@@ -81,7 +81,7 @@ class Server < Sinatra::Base
 	 	  		 redirect "/" 
 	 	 	 end
 	 	 	 #try login
-	 	 	puts 'Trying to login'
+	 	 	#puts 'Trying to login'
 
 	 	 	successful = db.password == params[:password]
 
@@ -91,7 +91,7 @@ class Server < Sinatra::Base
 	 	 		redirect '/'
 	 	 	end
 	 	 	  #setup session user data
-	 	 	  puts "User logs in successfully"
+	 	 	  #puts "User logs in successfully"
 
 	 	 	  session[:user_email] = email
 	 	 	  session[:user_id] = db.id
@@ -121,14 +121,14 @@ class Server < Sinatra::Base
 	 end
 
 	 post '/update' do
- 	 	 puts "Ajax request received"
- 	 	 puts params
+ 	 	 #puts "Ajax request received"
+ 	 	 #puts params
 
  	 	 value = "error"
 
  	 	 if params[:rm] != nil
- 	 	 	 params[:rm].each do |schedule_id|
- 	 	 		 puts "remove #{schedule_id}"
+ 	 	 	 params[:rm].each do |schedule_id| #remove registered schedules
+ 	 	 		 #puts "remove #{schedule_id}"
  	 			 entry = Registration.all(:schedule_id => schedule_id) + Registration.all(:user_id => session[:user_id])
 
  	 			 entry.destroy if entry
@@ -139,10 +139,10 @@ class Server < Sinatra::Base
 
  	 	 if params[:mk] != nil
  	 	 	 params[:mk].each do |schedule_id|
- 	 	 	 	
+ 	 	 	 	#add schedules
  	 	 	 	 entry = Registration.get(:schedule_id => schedule_id)
  	 	 	 	 if !entry
- 	 	 	 	 	 puts "add #{schedule_id}"
+ 	 	 	 	 	 #puts "add #{schedule_id}"
  	 	 	 	 	 saved = Registration.create(
 	 	 		 			:user_id => session[:user_id],
 	 	 		 			:schedule_id => schedule_id
@@ -161,7 +161,7 @@ class Server < Sinatra::Base
 	 	 session[:user_id]	  = nil
 	 	 redirect "/"
 	 end
-
+=begin
 	 get "/contact" do
 
 	 end
@@ -192,6 +192,6 @@ class Server < Sinatra::Base
 
  	 	 end
 	 end
-
+=end
 	 run! if app_file == $0
 end
